@@ -7,11 +7,12 @@ const client = {
       "fresh-popular": { latest: "1.0.0", deprecated: false, lastPublishIso: new Date().toISOString() },
       "old-niche": { latest: "1.0.0", deprecated: false, lastPublishIso: "2019-01-01T00:00:00.000Z" },
       "dead-pkg": { latest: "1.0.0", deprecated: true, lastPublishIso: "2018-01-01T00:00:00.000Z" },
+      "stale-moderate": { latest: "1.0.0", deprecated: false, lastPublishIso: "2024-01-01T00:00:00.000Z" },
     };
     return { name, ...map[name] };
   },
   async fetchWeeklyDownloads(name: string) {
-    const map: Record<string, number> = { "fresh-popular": 5_000_000, "old-niche": 500, "dead-pkg": 50 };
+    const map: Record<string, number> = { "fresh-popular": 5_000_000, "old-niche": 500, "dead-pkg": 50, "stale-moderate": 50_000 };
     return map[name] ?? 0;
   },
 };
@@ -33,5 +34,12 @@ describe("auditDependency", () => {
   it("caps the score at 100", async () => {
     const r = await auditDependency("dead-pkg", client);
     expect(r.riskScore).toBeLessThanOrEqual(100);
+  });
+
+  it("rates a stale but moderately-used package as caution", async () => {
+    const r = await auditDependency("stale-moderate", client);
+    expect(r.recommendation).toBe("caution");
+    expect(r.riskScore).toBeGreaterThanOrEqual(30);
+    expect(r.riskScore).toBeLessThan(60);
   });
 });
