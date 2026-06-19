@@ -7,7 +7,7 @@
 | | |
 |---|---|
 | **Project** | AI Software Engineering Operating System (AI-SEOS) |
-| **Current stage** | ✅ Phases 1 & 2 COMPLETE — two runnable MCP servers shipped (53 tests). Phases 3-10 awaiting expansion |
+| **Current stage** | ✅ Phases 1, 2, 3, 7 COMPLETE — four runnable MCP servers shipped (83 tests). Phases 4, 5, 6, 8, 9, 10 awaiting expansion |
 | **Plan** | [2026-06-19-engineering-os.md](2026-06-19-engineering-os.md) |
 | **Repo state** | Git repo initialized; commits landing per task |
 | **Tech stack** | TypeScript · Node 24 · `@modelcontextprotocol/sdk` · Zod · Vitest · tsup · pnpm workspaces |
@@ -16,10 +16,14 @@
 
 ```
 Planning   ████████████████████  100%
-Phase 1    ████████████████████  100%  (@seos/knowledge; 21 tests green)
+Phase 1    ████████████████████  100%  (@seos/knowledge;    21 tests green)
 Phase 2    ████████████████████  100%  (@seos/architecture; 32 tests green)
-Phases 3-10 ░░░░░░░░░░░░░░░░░░░░   0%   (sub-plans only, not expanded)
+Phase 3    ████████████████████  100%  (@seos/security;     22 tests green)
+Phase 7    ████████████████████  100%  (@seos/memory;        8 tests green)
+Phases 4,5,6,8,9,10 ░░░░░░░░░░░░   0%   (sub-plans only, not expanded)
 ```
+
+**Repo total: 4 MCP servers · 83 tests green · 42 commits on `main`.**
 
 ---
 
@@ -34,11 +38,11 @@ Phases 3-10 ░░░░░░░░░░░░░░░░░░░░   0%   
 
 ## In progress
 
-- _Nothing currently being implemented._ Phases 1 & 2 shipped via subagent-driven development. Ready to expand & execute Phase 3 (Security) or Phase 7 (Memory, unblocked) next.
+- _Nothing currently being implemented._ Phases 1, 2, 3, 7 shipped. Phases 3 & 7 were executed **in parallel** via background agents in isolated git worktrees, then merged.
 
 ## Not started
 
-- Phases 3-10 — sub-plans pending expansion when reached
+- Phases 4 (QA), 5 (Performance), 6 (DevOps), 8 (Review Board), 9 (Self-Healing), 10 (Compliance) — sub-plans pending expansion. Phase 8 depends on 4/5/6; Phase 9 depends on 6/8.
 
 ---
 
@@ -82,16 +86,45 @@ Phases 3-10 ░░░░░░░░░░░░░░░░░░░░   0%   
 
 ---
 
+## Phase 3 — `@seos/security` (executed in parallel worktree)
+
+Plan: [docs/superpowers/plans/2026-06-19-phase3-security.md](docs/superpowers/plans/2026-06-19-phase3-security.md). Built end-to-end by a background agent (TDD per task), then final-reviewed + hardened on `main`.
+
+| Tool | Purpose |
+|------|---------|
+| `scan_secrets` | Regex secret rules (OpenAI incl. `sk-proj-`, AWS, private keys, generic); escalates `secret-in-frontend` for frontend-reachable paths (Windows paths normalized) |
+| `scan_dependencies` | Live CVE lookup via OSV.dev (injectable fetch); **throws** on OSV service errors rather than reporting a false "all clear" |
+| `scan_code` | Static rules: SQL-injection interpolation, XSS `dangerouslySetInnerHTML`, `eval`, command injection |
+| `threat_model` | Deterministic system→risk mapping (account takeover, privilege escalation, injection, DoS, data exposure) |
+
+**Result:** 22 tests passing, builds + stdio smoke (4 tools). Hardening `639ac05`. Auth-flow review (sessions/RBAC/OAuth) and multi-line/concat injection patterns are documented v0.1 gaps.
+
+---
+
+## Phase 7 — `@seos/memory` (executed in parallel worktree)
+
+Plan: [docs/superpowers/plans/2026-06-19-phase7-memory.md](docs/superpowers/plans/2026-06-19-phase7-memory.md). Built end-to-end by a background agent (TDD per task), then final-reviewed + hardened on `main`.
+
+| Tool | Purpose |
+|------|---------|
+| `record_decision` / `query_decisions` | Persist + substring-query engineering decisions |
+| `set_context` / `get_context` | Merge/read project context (architecture, constraints, goals, stack) |
+| `record_history` / `search_history` | Persist + search bugs/incidents/bottlenecks (substring or exact kind) |
+
+**Result:** 8 tests passing, builds + stdio smoke (6 tools). `MemoryStore` interface with `inMemoryStore` (tests) + `jsonFileStore` (persists across instances). Hardening `d65a946`: corrupt-file now fails loud (ENOENT→empty, else rethrow). MCP resources + direct ADR-file ingestion from `@seos/architecture` are documented deferred follow-ups.
+
+---
+
 ## Phases 2-10 — sub-plan status
 
 | Phase | Subsystem | Package | Sub-plan written | Expanded to TDD | Built |
 |-------|-----------|---------|:---:|:---:|:---:|
 | 2 | Engineering Quality | `@seos/architecture` | ✅ | ✅ | ✅ |
-| 3 | Security | `@seos/security` | ✅ | ⬜ | ⬜ |
+| 3 | Security | `@seos/security` | ✅ | ✅ | ✅ |
 | 4 | Quality Assurance | `@seos/qa` | ✅ | ⬜ | ⬜ |
 | 5 | Performance | `@seos/performance` | ✅ | ⬜ | ⬜ |
 | 6 | DevOps | `@seos/devops` | ✅ | ⬜ | ⬜ |
-| 7 | Engineering Memory | `@seos/memory` | ✅ | ⬜ | ⬜ |
+| 7 | Engineering Memory | `@seos/memory` | ✅ | ✅ | ✅ |
 | 8 | Multi-Agent Review Board | `@seos/review-board` | ✅ | ⬜ | ⬜ |
 | 9 | Self-Healing | `@seos/self-healing` | ✅ | ⬜ | ⬜ |
 | 10 | Enterprise / Compliance | `@seos/compliance` | ✅ | ⬜ | ⬜ |
@@ -106,10 +139,14 @@ Phases 3-10 ░░░░░░░░░░░░░░░░░░░░   0%   
 | 2026-06-19 | Phase 1 fully executable; Phases 2-10 as sub-plans | Avoids fabricating code against not-yet-existing inputs (placeholder risk) |
 | 2026-06-19 | pnpm monorepo with one package per phase | Each subsystem independently installable/registerable as an MCP server |
 | 2026-06-19 | Inject `fetch`/clients into all tools | Offline, deterministic tests |
+| 2026-06-19 | Run Phases 3 & 7 in parallel via background agents in isolated git worktrees | User requested parallelism; disjoint packages; avoids `.git/index.lock` + lockfile collisions of same-tree parallel work |
+| 2026-06-19 | Parallel phases use TDD + a final whole-package review (not per-task two-stage review) | Per-task review can't run across concurrent autonomous executors; final review is where prior phases' real findings surfaced anyway |
+| 2026-06-19 | `@seos/memory` uses JSON-file store, not better-sqlite3 | Avoids native build risk on Windows; interface allows swapping later |
+| 2026-06-19 | Security/memory add no new runtime deps | Minimizes lockfile churn across parallel worktrees (OSV via `fetch`, memory via fs) |
 
 ## Open questions / next decision
 
-- **Next phase to tackle:** Phase 3 (Security) or Phase 7 (Engineering Memory — unblocked, foundational for later phases). Each needs writing-plans expansion before subagent execution.
+- **Next phases:** 4 (QA), 5 (Performance), 6 (DevOps) are independent and could also run in parallel. Phase 8 (Review Board) should follow 4/5/6 since it composes them. Each needs writing-plans expansion before execution.
 
 ## Known caveats & deferred follow-ups
 
@@ -135,3 +172,9 @@ Phases 3-10 ░░░░░░░░░░░░░░░░░░░░   0%   
 - **2026-06-19** — Phase 2 final review + Task 2.8 hardening (`0bc5206`): `z.coerce.number()` inputs, `generate_architecture` now derives the profile via `intake()` (no inconsistent derived fields), `slugify` empty→`untitled` fallback, ADR `writeFile` `wx` flag, generator→reviewer integration test, tier-boundary tests. 32 tests.
 - **2026-06-19** — ✅ **Phase 2 complete.** Repo total: 22 commits, 2 MCP servers, 53 tests green.
 - **Deferred (Phase 2 review):** #6 small-scale multi-region cache warning (correct behavior, note in README); #8 `@types/node` version alignment; #9 defensive `nextAdrNumber` catch.
+- **2026-06-19** — Expanded Phase 3 (Security) and Phase 7 (Memory) into full TDD plans; committed planning docs (`2257c81`). Dispatched both as **parallel background agents in isolated git worktrees**.
+- **2026-06-19** — Phase 3 done (8 commits): `@seos/security`, 18 tests. Phase 7 done (6 commits): `@seos/memory`, 6 tests. Both via autonomous TDD execution.
+- **2026-06-19** — Final whole-package reviews run on both worktrees. Merged both branches into `main` (`a38d5e3`, `e6422ca`); resolved the lockfile overlap (`6e0589a`).
+- **2026-06-19** — Hardening landed: security `639ac05` (`sk-proj-` keys, Windows path normalization, fail-loud OSV errors → 22 tests); memory `d65a946` (corrupt-file fails loud, kind-match test, write-semantics comment → 8 tests).
+- **2026-06-19** — Worktrees + merged branches cleaned up. ✅ **Phases 3 & 7 complete.** Repo total: 42 commits, 4 MCP servers, **83 tests green** on `main`.
+- **Deferred (Phase 3/7 reviews):** security multi-line & string-concat injection patterns, `spawn`/`execFile` coverage, auth-flow review; memory MCP resources + ADR ingestion. All documented in package READMEs as v0.1 gaps.
