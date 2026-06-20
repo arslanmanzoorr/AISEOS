@@ -7,7 +7,7 @@
 | | |
 |---|---|
 | **Project** | AI Software Engineering Operating System (AI-SEOS) |
-| **Current stage** | ✅ Phases 1, 2, 3, 7 COMPLETE — four runnable MCP servers shipped (83 tests). Phases 4, 5, 6, 8, 9, 10 awaiting expansion |
+| **Current stage** | ✅ Phases 1, 2, 3, 4, 5, 7 COMPLETE — six runnable MCP servers shipped (101 tests). Phases 6, 8, 9, 10 awaiting expansion |
 | **Plan** | [2026-06-19-engineering-os.md](2026-06-19-engineering-os.md) |
 | **Repo state** | Git repo initialized; commits landing per task |
 | **Tech stack** | TypeScript · Node 24 · `@modelcontextprotocol/sdk` · Zod · Vitest · tsup · pnpm workspaces |
@@ -19,11 +19,13 @@ Planning   ████████████████████  100%
 Phase 1    ████████████████████  100%  (@seos/knowledge;    21 tests green)
 Phase 2    ████████████████████  100%  (@seos/architecture; 32 tests green)
 Phase 3    ████████████████████  100%  (@seos/security;     22 tests green)
+Phase 4    ████████████████████  100%  (@seos/qa;           10 tests green)
+Phase 5    ████████████████████  100%  (@seos/performance;   8 tests green)
 Phase 7    ████████████████████  100%  (@seos/memory;        8 tests green)
-Phases 4,5,6,8,9,10 ░░░░░░░░░░░░   0%   (sub-plans only, not expanded)
+Phases 6,8,9,10 ░░░░░░░░░░░░░░░░   0%   (sub-plans only, not expanded)
 ```
 
-**Repo total: 4 MCP servers · 83 tests green · 42 commits on `main`.**
+**Repo total: 6 MCP servers · 101 tests green on `main`.**
 
 ---
 
@@ -38,11 +40,11 @@ Phases 4,5,6,8,9,10 ░░░░░░░░░░░░   0%   (sub-plans only,
 
 ## In progress
 
-- _Nothing currently being implemented._ Phases 1, 2, 3, 7 shipped. Phases 3 & 7 were executed **in parallel** via background agents in isolated git worktrees, then merged.
+- _Nothing currently being implemented._ Six servers shipped (Phases 1–5, 7).
 
 ## Not started
 
-- Phases 4 (QA), 5 (Performance), 6 (DevOps), 8 (Review Board), 9 (Self-Healing), 10 (Compliance) — sub-plans pending expansion. Phase 8 depends on 4/5/6; Phase 9 depends on 6/8.
+- Phases 6 (DevOps), 8 (Review Board), 9 (Self-Healing), 10 (Compliance) — sub-plans pending expansion. Phase 8 composes 3/4/5/6; Phase 9 depends on 6/8.
 
 ---
 
@@ -115,14 +117,42 @@ Plan: [docs/superpowers/plans/2026-06-19-phase7-memory.md](docs/superpowers/plan
 
 ---
 
+## Phase 4 — `@seos/qa`
+
+Plan: [docs/superpowers/plans/2026-06-19-phase4-qa.md](docs/superpowers/plans/2026-06-19-phase4-qa.md).
+
+| Tool | Purpose |
+|------|---------|
+| `generate_tests` | Extract a file's real exported symbols → emit a Vitest skeleton importing them (no fabricated assertions) |
+| `check_coverage` | Gate line-coverage against a minimum (default 80%) |
+| `detect_regressions` | Diff baseline vs current test results → names of previously-passing tests that no longer pass (incl. disappeared) |
+
+**Result:** 10 tests passing, builds + stdio smoke (3 tools). Pure deterministic functions.
+
+---
+
+## Phase 5 — `@seos/performance`
+
+Plan: [docs/superpowers/plans/2026-06-19-phase5-performance.md](docs/superpowers/plans/2026-06-19-phase5-performance.md).
+
+| Tool | Purpose |
+|------|---------|
+| `analyze_backend` | Detect N+1 queries (awaited DB call inside a loop) and `SELECT *` |
+| `analyze_frontend` | Flag bundle assets over a byte budget (>2× budget → high severity) |
+| `simulate_load` | Staged load simulation (default [100,1000,10000]) with an injectable runner; default is a concurrent-fetch sampler |
+
+**Result:** 8 tests passing, builds + stdio smoke (3 tools). Static analysis is regex/heuristic (documented v0.1 gaps: multi-line & string-concat patterns, `spawn`/`execFile`); the default load runner is a lightweight sampler, not a full load tool.
+
+---
+
 ## Phases 2-10 — sub-plan status
 
 | Phase | Subsystem | Package | Sub-plan written | Expanded to TDD | Built |
 |-------|-----------|---------|:---:|:---:|:---:|
 | 2 | Engineering Quality | `@seos/architecture` | ✅ | ✅ | ✅ |
 | 3 | Security | `@seos/security` | ✅ | ✅ | ✅ |
-| 4 | Quality Assurance | `@seos/qa` | ✅ | ⬜ | ⬜ |
-| 5 | Performance | `@seos/performance` | ✅ | ⬜ | ⬜ |
+| 4 | Quality Assurance | `@seos/qa` | ✅ | ✅ | ✅ |
+| 5 | Performance | `@seos/performance` | ✅ | ✅ | ✅ |
 | 6 | DevOps | `@seos/devops` | ✅ | ⬜ | ⬜ |
 | 7 | Engineering Memory | `@seos/memory` | ✅ | ✅ | ✅ |
 | 8 | Multi-Agent Review Board | `@seos/review-board` | ✅ | ⬜ | ⬜ |
@@ -143,6 +173,7 @@ Plan: [docs/superpowers/plans/2026-06-19-phase7-memory.md](docs/superpowers/plan
 | 2026-06-19 | Parallel phases use TDD + a final whole-package review (not per-task two-stage review) | Per-task review can't run across concurrent autonomous executors; final review is where prior phases' real findings surfaced anyway |
 | 2026-06-19 | `@seos/memory` uses JSON-file store, not better-sqlite3 | Avoids native build risk on Windows; interface allows swapping later |
 | 2026-06-19 | Security/memory add no new runtime deps | Minimizes lockfile churn across parallel worktrees (OSV via `fetch`, memory via fs) |
+| 2026-06-19 | Phases 4 & 5: discard the parallel worktree output, rebuild on `main` from the detailed plans | The `isolation: worktree` base predated the just-committed Phase 4/5 plans, so both agents improvised from the coarse sub-spec and diverged from the reviewed contracts. Rebuilding verbatim from the detailed plans was cleaner than merge-then-rewrite. **Lesson: commit plan files well before dispatching worktree agents, or pass the plan inline.** |
 
 ## Open questions / next decision
 
@@ -178,3 +209,7 @@ Plan: [docs/superpowers/plans/2026-06-19-phase7-memory.md](docs/superpowers/plan
 - **2026-06-19** — Hardening landed: security `639ac05` (`sk-proj-` keys, Windows path normalization, fail-loud OSV errors → 22 tests); memory `d65a946` (corrupt-file fails loud, kind-match test, write-semantics comment → 8 tests).
 - **2026-06-19** — Worktrees + merged branches cleaned up. ✅ **Phases 3 & 7 complete.** Repo total: 42 commits, 4 MCP servers, **83 tests green** on `main`.
 - **Deferred (Phase 3/7 reviews):** security multi-line & string-concat injection patterns, `spawn`/`execFile` coverage, auth-flow review; memory MCP resources + ADR ingestion. All documented in package READMEs as v0.1 gaps.
+- **2026-06-19** — Added root [README.md](README.md) (project overview, server table, install/register). Expanded Phase 4 (QA) and Phase 5 (Performance) into detailed TDD plans (`0cf44fe`).
+- **2026-06-19** — Dispatched Phases 4 & 5 as parallel worktree agents, but their worktree base predated the plan commit → both improvised from the coarse sub-spec and diverged from the reviewed contracts (final reviews flagged contract mismatches + a real N+1 brace-counting bug in Phase 5). **Discarded both worktree branches.**
+- **2026-06-19** — Rebuilt Phases 4 & 5 directly on `main` from the detailed plans (one sequential agent, verbatim TDD). Agent caught a real bug in the plan's N+1 regex (`\bfind\b` can't match `findMany`) and fixed it via longest-first alternation. `@seos/qa` (10 tests) + `@seos/performance` (8 tests).
+- **2026-06-19** — ✅ **Phases 4 & 5 complete.** Repo total: **6 MCP servers, 101 tests green** on `main`. Root README updated (4 & 5 → shipped, registration blocks added).

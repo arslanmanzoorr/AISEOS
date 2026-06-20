@@ -21,8 +21,8 @@ The build is organized as a 10-phase program (see [`docs/superpowers/plans/2026-
 | 1 | [`@seos/knowledge`](packages/knowledge) | ✅ shipped | `check_versions`, `audit_dependency`, `verify_api`, `get_knowledge` |
 | 2 | [`@seos/architecture`](packages/architecture) | ✅ shipped | `intake_requirements`, `generate_architecture`, `review_design`, `write_adr` |
 | 3 | [`@seos/security`](packages/security) | ✅ shipped | `scan_secrets`, `scan_dependencies`, `scan_code`, `threat_model` |
-| 4 | [`@seos/qa`](packages/qa) | 🟡 in progress | `generate_tests`, `check_coverage`, `detect_regressions` |
-| 5 | [`@seos/performance`](packages/performance) | 🟡 in progress | `analyze_backend`, `analyze_frontend`, `simulate_load` |
+| 4 | [`@seos/qa`](packages/qa) | ✅ shipped | `generate_tests`, `check_coverage`, `detect_regressions` |
+| 5 | [`@seos/performance`](packages/performance) | ✅ shipped | `analyze_backend`, `analyze_frontend`, `simulate_load` |
 | 6 | `@seos/devops` | ⬜ planned | infra/observability/reliability generators |
 | 7 | [`@seos/memory`](packages/memory) | ✅ shipped | `record_decision`, `query_decisions`, `set_context`, `get_context`, `record_history`, `search_history` |
 | 8 | `@seos/review-board` | ⬜ planned | multi-agent PR review board |
@@ -34,6 +34,8 @@ The build is organized as a 10-phase program (see [`docs/superpowers/plans/2026-
 - **`@seos/knowledge`** — stops outdated/dangerous code. Validates package versions against the live npm registry (semver-range aware), scores dependencies for abandonment/risk, detects hallucinated APIs on installed packages, and serves a curated authoritative stack profile.
 - **`@seos/architecture`** — "architecture before code." Captures scale requirements, generates a deterministic architecture proposal, reviews it against design rules, and writes Architecture Decision Records.
 - **`@seos/security`** — automatic security review. Secret scanning (with frontend-leak escalation), live CVE lookups via [OSV.dev](https://osv.dev), static injection/XSS/eval detection, and threat modeling.
+- **`@seos/qa`** — automated QA gates. Generates Vitest skeletons from a file's real exported symbols, enforces a coverage threshold, and detects regressions between two test runs.
+- **`@seos/performance`** — catches scaling problems early. Detects backend N+1 queries and `SELECT *`, flags oversized frontend bundles against a budget, and runs a staged load simulation with an injectable runner.
 - **`@seos/memory`** — persistent institutional memory. Decisions, project context, and historical bugs/incidents/bottlenecks that survive across sessions, behind a swappable store interface.
 
 ## Requirements
@@ -68,6 +70,14 @@ Add the servers you want to your MCP config (e.g. `.mcp.json` or your Claude Cod
     "seos-security": {
       "command": "node",
       "args": ["./packages/security/dist/index.js"]
+    },
+    "seos-qa": {
+      "command": "node",
+      "args": ["./packages/qa/dist/index.js"]
+    },
+    "seos-performance": {
+      "command": "node",
+      "args": ["./packages/performance/dist/index.js"]
     },
     "seos-memory": {
       "command": "node",
