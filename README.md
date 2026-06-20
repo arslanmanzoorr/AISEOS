@@ -1,5 +1,14 @@
 # Engineering OS
 
+> Engineering discipline for AI-assisted development — as Model Context Protocol servers.
+
+![Protocol: MCP](https://img.shields.io/badge/protocol-MCP-6E56CF)
+![Node](https://img.shields.io/badge/node-%E2%89%A524-339933?logo=node.js&logoColor=white)
+![pnpm](https://img.shields.io/badge/pnpm-%E2%89%A510-F69220?logo=pnpm&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-ESM-3178C6?logo=typescript&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-143%20passing-brightgreen)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+
 **A governance layer for AI-assisted software development.** Engineering OS is a suite of [Model Context Protocol](https://modelcontextprotocol.io) (MCP) servers that sit between a coding assistant and your codebase, enforcing the engineering discipline of a mature software organization — version and dependency safety, hallucination detection, architecture and security review, automated QA, performance analysis, deployment scaffolding, institutional memory, multi-agent code review, automated remediation, and compliance.
 
 The premise is simple: most failures in AI-generated code aren't reasoning failures, they're *discipline* failures — an outdated dependency, a hallucinated API, a leaked secret, an unreviewed architecture, a missing test. Engineering OS makes that discipline automatic.
