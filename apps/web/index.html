@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AISEOS — Engineering discipline for your AI coding assistant</title>
+<meta name="description" content="Hosted governance for AI-assisted development. Connect any MCP client and get version, dependency, security, QA, and review guardrails — automatically." />
+<style>
+  :root {
+    --bg: #0B0D12; --panel: #0F1320; --line: #242B3D; --text: #E6E8EC; --muted: #8A93A8;
+    --violet: #9B8CFF; --cyan: #22D3EE;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font-family: Inter, "Segoe UI", Roboto, system-ui, -apple-system, sans-serif; }
+  body { background-image: radial-gradient(60% 50% at 80% 0%, rgba(110,86,207,.20), transparent),
+                          radial-gradient(50% 50% at 10% 100%, rgba(34,211,238,.12), transparent); }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 64px 24px 96px; }
+  .brand { font: 600 14px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing: 3px; color: var(--muted); }
+  .brand b { color: var(--cyan); }
+  h1 { font-size: clamp(34px, 6vw, 60px); font-weight: 800; line-height: 1.05; margin: 28px 0 16px; letter-spacing: -.5px; }
+  h1 .grad { background: linear-gradient(90deg, var(--violet), var(--cyan)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lead { font-size: clamp(17px, 2.4vw, 21px); color: var(--muted); max-width: 620px; margin: 0 0 32px; }
+  .caps { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 40px; }
+  .cap { font: 500 13px/1 "JetBrains Mono", monospace; color: #C9CEDA; background: #13182360;
+    border: 1px solid var(--line); border-radius: 999px; padding: 9px 13px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 28px; }
+  .card h2 { margin: 0 0 6px; font-size: 22px; font-weight: 700; }
+  .card p { margin: 0 0 18px; color: var(--muted); font-size: 15px; }
+  form { display: flex; gap: 10px; flex-wrap: wrap; }
+  input[type=email] { flex: 1 1 260px; min-width: 0; background: #0B0E16; border: 1px solid var(--line);
+    border-radius: 12px; padding: 14px 16px; color: var(--text); font-size: 16px; }
+  input[type=email]:focus { outline: none; border-color: var(--violet); }
+  button { background: linear-gradient(90deg, var(--violet), var(--cyan)); color: #0B0D12; font-weight: 700;
+    font-size: 16px; border: 0; border-radius: 12px; padding: 14px 22px; cursor: pointer; }
+  button:disabled { opacity: .6; cursor: default; }
+  .msg { margin-top: 14px; font-size: 14px; min-height: 20px; }
+  .msg.err { color: #FCA5A5; }
+  .success { display: none; margin-top: 22px; }
+  .success.show { display: block; }
+  .row { margin-top: 16px; }
+  .row label { display: block; font: 600 12px/1 "JetBrains Mono", monospace; color: var(--muted); letter-spacing: 1px; margin-bottom: 6px; }
+  pre { background: #0B0E16; border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin: 0;
+    overflow-x: auto; font: 13px/1.5 "JetBrains Mono", monospace; color: #C9CEDA; white-space: pre-wrap; word-break: break-all; }
+  .copy { background: transparent; color: var(--cyan); border: 1px solid var(--line); border-radius: 8px;
+    padding: 6px 12px; font-size: 12px; font-weight: 600; margin-top: 8px; }
+  .note { color: var(--muted); font-size: 13px; margin-top: 26px; }
+  footer { color: #5A6173; font: 13px/1 "JetBrains Mono", monospace; margin-top: 56px; }
+  a { color: var(--cyan); }
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="brand">● <b>AISEOS</b></div>
+    <h1>Engineering discipline for your <span class="grad">AI coding assistant</span>.</h1>
+    <p class="lead">Connect any MCP client and get governance guardrails — version &amp; dependency safety, hallucination detection, security, QA, performance, and review — applied automatically as you build.</p>
+
+    <div class="caps" aria-label="capabilities">
+      <span class="cap">versions</span><span class="cap">dependencies</span><span class="cap">hallucination</span>
+      <span class="cap">architecture</span><span class="cap">security</span><span class="cap">qa</span>
+      <span class="cap">performance</span><span class="cap">devops</span><span class="cap">memory</span>
+      <span class="cap">review board</span><span class="cap">self-healing</span><span class="cap">compliance</span>
+    </div>
+
+    <section class="card">
+      <h2>Get your endpoint</h2>
+      <p>Enter your email to receive an access token and a personal MCP URL. Free during the beta.</p>
+      <form id="form">
+        <input id="email" type="email" placeholder="you@company.com" required autocomplete="email" />
+        <button id="submit" type="submit">Get access →</button>
+      </form>
+      <div id="msg" class="msg" role="status"></div>
+
+      <div id="success" class="success">
+        <div class="row">
+          <label>YOUR MCP URL</label>
+          <pre id="mcpUrl"></pre>
+        </div>
+        <div class="row">
+          <label>YOUR TOKEN — save it, it won't be shown again</label>
+          <pre id="token"></pre>
+        </div>
+        <div class="row">
+          <label>ADD TO YOUR MCP CLIENT (e.g. .mcp.json)</label>
+          <pre id="snippet"></pre>
+          <button class="copy" id="copy" type="button">Copy config</button>
+        </div>
+      </div>
+
+      <p class="note">No install required. Your data is isolated per account; the gateway never executes git on your behalf.</p>
+    </section>
+
+    <footer>AISEOS — AI Software Engineering OS · open source (MIT)</footer>
+  </main>
+
+<script>
+  // EDIT THIS to your deployed gateway origin (the VPS running @seos/cloud).
+  const API_BASE = window.SEOS_API_BASE || "https://api.aiseos.dev";
+
+  const form = document.getElementById("form");
+  const emailEl = document.getElementById("email");
+  const submitEl = document.getElementById("submit");
+  const msg = document.getElementById("msg");
+  const success = document.getElementById("success");
+
+  function setMsg(text, isErr) { msg.textContent = text; msg.className = "msg" + (isErr ? " err" : ""); }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = emailEl.value.trim();
+    if (!email) return;
+    submitEl.disabled = true;
+    setMsg("Issuing your token…", false);
+    try {
+      const res = await fetch(`${API_BASE}/api/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) {
+        setMsg(res.status === 400 ? "That email doesn't look valid." : "Something went wrong — please try again.", true);
+        submitEl.disabled = false;
+        return;
+      }
+      const { token, mcpUrl } = await res.json();
+      document.getElementById("mcpUrl").textContent = mcpUrl;
+      document.getElementById("token").textContent = token;
+      const snippet = JSON.stringify(
+        { mcpServers: { aiseos: { url: mcpUrl, headers: { Authorization: `Bearer ${token}` } } } },
+        null, 2,
+      );
+      document.getElementById("snippet").textContent = snippet;
+      document.getElementById("copy").onclick = () => navigator.clipboard.writeText(snippet);
+      success.classList.add("show");
+      setMsg("You're in. Add the config below to your MCP client.", false);
+      form.style.display = "none";
+    } catch {
+      setMsg("Network error — is the gateway reachable?", true);
+      submitEl.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
