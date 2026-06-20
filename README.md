@@ -26,8 +26,10 @@ The build is organized as a 10-phase program (see [`docs/superpowers/plans/2026-
 | 6 | [`@seos/devops`](packages/devops) | ✅ shipped | `generate_infra`, `generate_observability`, `check_reliability` |
 | 7 | [`@seos/memory`](packages/memory) | ✅ shipped | `record_decision`, `query_decisions`, `set_context`, `get_context`, `record_history`, `search_history` |
 | 8 | [`@seos/review-board`](packages/review-board) | ✅ shipped | `review_pr` (multi-agent board) |
-| 9 | `@seos/self-healing` | ⬜ planned | monitor → root-cause → fix → PR |
-| 10 | `@seos/compliance` | ⬜ planned | SOC2 / GDPR / HIPAA / PCI + audit log |
+| 9 | [`@seos/self-healing`](packages/self-healing) | ✅ shipped | `ingest_signals`, `root_cause`, `propose_fix`, `create_pr` |
+| 10 | [`@seos/compliance`](packages/compliance) | ✅ shipped | `check_compliance`, `append_audit_log`, `verify_audit_log` |
+
+**All 10 phases shipped — 10 MCP servers, 143 tests green.**
 
 ### What each shipped server does
 
@@ -38,6 +40,8 @@ The build is organized as a 10-phase program (see [`docs/superpowers/plans/2026-
 - **`@seos/performance`** — catches scaling problems early. Detects backend N+1 queries and `SELECT *`, flags oversized frontend bundles against a budget, and runs a staged load simulation with an injectable runner.
 - **`@seos/devops`** — SRE practices for solo founders. Generates deployment infrastructure (Dockerfile, CI pipeline, health check), observability scaffolding (logging/metrics/tracing), and checks reliability readiness (backup/restore/rollback).
 - **`@seos/review-board`** — a multi-agent PR review board. Reference agents (documentation, secret-scan, large-file) each vote approve/reject; a PR is approved only when none reject. Extensible via a `ReviewAgent` interface.
+- **`@seos/self-healing`** — turns production signals into a fix. Dedupes logs/errors/metrics into issues, hypothesizes a root cause, proposes a fix + regression test, and opens a PR — **never auto-merging** (a human and the review board approve).
+- **`@seos/compliance`** — enterprise gates. Checks a system against SOC 2 / GDPR / HIPAA / PCI control checklists and maintains a tamper-evident, hash-chained audit log.
 - **`@seos/memory`** — persistent institutional memory. Decisions, project context, and historical bugs/incidents/bottlenecks that survive across sessions, behind a swappable store interface.
 
 ## Requirements
@@ -89,6 +93,14 @@ Add the servers you want to your MCP config (e.g. `.mcp.json` or your Claude Cod
       "command": "node",
       "args": ["./packages/review-board/dist/index.js"]
     },
+    "seos-self-healing": {
+      "command": "node",
+      "args": ["./packages/self-healing/dist/index.js"]
+    },
+    "seos-compliance": {
+      "command": "node",
+      "args": ["./packages/compliance/dist/index.js"]
+    },
     "seos-memory": {
       "command": "node",
       "args": ["./packages/memory/dist/index.js"],
@@ -113,6 +125,8 @@ engineering-os/
     devops/         # Phase 6
     memory/         # Phase 7
     review-board/   # Phase 8
+    self-healing/   # Phase 9
+    compliance/     # Phase 10
   docs/
     superpowers/plans/   # the program plan + per-phase implementation plans
     adr/                 # Architecture Decision Records (written by @seos/architecture)
@@ -133,4 +147,4 @@ Each phase is expanded into a complete TDD implementation plan, then executed ta
 
 ## Status & roadmap
 
-See [`Progress.md`](Progress.md) for the live tracker, decisions log, and the list of documented v0.1 gaps deferred to later iterations. Phases 9 (Self-Healing) and 10 (Compliance) are specified as sub-plans in the program plan and will each be expanded into a full implementation plan when built.
+**All 10 phases are shipped.** See [`Progress.md`](Progress.md) for the full build history, decisions log, and the list of documented v0.1 gaps deferred to later iterations (e.g. security multi-line patterns, memory MCP resources, wiring the review board's `ReviewAgent` interface to the sibling servers, persisting the compliance audit log via `@seos/memory`). These are enhancements on a complete, working foundation.

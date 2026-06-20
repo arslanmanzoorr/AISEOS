@@ -7,7 +7,7 @@
 | | |
 |---|---|
 | **Project** | AI Software Engineering Operating System (AI-SEOS) |
-| **Current stage** | ✅ Phases 1–8 COMPLETE — eight runnable MCP servers shipped (121 tests). Phases 9 & 10 awaiting expansion |
+| **Current stage** | 🎉 **PROGRAM COMPLETE** — all 10 phases shipped. 10 runnable MCP servers, 143 tests green on `main` |
 | **Plan** | [2026-06-19-engineering-os.md](2026-06-19-engineering-os.md) |
 | **Repo state** | Git repo initialized; commits landing per task |
 | **Tech stack** | TypeScript · Node 24 · `@modelcontextprotocol/sdk` · Zod · Vitest · tsup · pnpm workspaces |
@@ -24,10 +24,11 @@ Phase 5    ████████████████████  100%  (
 Phase 6    ████████████████████  100%  (@seos/devops;        8 tests green)
 Phase 7    ████████████████████  100%  (@seos/memory;        8 tests green)
 Phase 8    ████████████████████  100%  (@seos/review-board; 12 tests green)
-Phases 9,10 ░░░░░░░░░░░░░░░░░░░░   0%   (sub-plans only, not expanded)
+Phase 9    ████████████████████  100%  (@seos/self-healing; 13 tests green)
+Phase 10   ████████████████████  100%  (@seos/compliance;    9 tests green)
 ```
 
-**Repo total: 8 MCP servers · 121 tests green on `main`.**
+**Repo total: 10 MCP servers · 143 tests green on `main`. 🎉 All 10 phases shipped.**
 
 ---
 
@@ -42,11 +43,11 @@ Phases 9,10 ░░░░░░░░░░░░░░░░░░░░   0%   
 
 ## In progress
 
-- _Nothing currently being implemented._ Eight servers shipped (Phases 1–8).
+- _Nothing — the program is complete._ All 10 servers shipped, reviewed, and hardened on `main`.
 
-## Not started
+## Remaining (enhancements, not blockers)
 
-- Phases 9 (Self-Healing), 10 (Compliance) — sub-plans pending expansion. Phase 9 depends on 6/8 (both now shipped).
+- Documented v0.1 gaps only (see each package README + the deferred list below): security multi-line/concat patterns & auth-flow review; memory MCP resources + ADR ingestion; wiring the review board's `ReviewAgent` interface to the sibling servers; persisting the compliance audit log via `@seos/memory`.
 
 ---
 
@@ -175,6 +176,35 @@ Built around a `ReviewAgent` interface (the integration seam) + `runBoard` aggre
 
 ---
 
+## Phase 9 — `@seos/self-healing`
+
+Plan: [docs/superpowers/plans/2026-06-19-phase9-self-healing.md](docs/superpowers/plans/2026-06-19-phase9-self-healing.md).
+
+| Tool | Purpose |
+|------|---------|
+| `ingest_signals` | Dedupe logs/errors/metrics into issues by normalized signature; severity = max in group |
+| `root_cause` | Keyword→category hypothesis (connectivity, null-reference, memory, concurrency, unknown) |
+| `propose_fix` | Summary + patch recommendation + a Vitest regression-test stub |
+| `create_pr` | Opens a PR via an injectable git/gh runner — **never merges** (structural merge guard, enforced + tested) |
+
+**Result:** 13 tests passing, builds + stdio smoke (4 tools). Hardening `eef3b5c`: structural merge guard (no false-positive on a commit message containing "merge") + more root-cause coverage. `create_pr` uses `execFile` (arg array, no shell injection).
+
+---
+
+## Phase 10 — `@seos/compliance`
+
+Plan: [docs/superpowers/plans/2026-06-19-phase10-compliance.md](docs/superpowers/plans/2026-06-19-phase10-compliance.md).
+
+| Tool | Purpose |
+|------|---------|
+| `check_compliance` | SOC 2 / GDPR / HIPAA / PCI control checklists → compliant + specific gaps |
+| `append_audit_log` | Append a tamper-evident, hash-chained audit entry (sha256 over index\|prevHash\|event) |
+| `verify_audit_log` | Recompute the chain; reports the first tampered index (detects field edits, reorder, deletion) |
+
+**Result:** 9 tests passing, builds + stdio smoke (3 tools). Hardening `5120d8c`: hash check recomputes against the expected prev hash (defense in depth) + deletion & HIPAA tests. Audit log is stateless (persist via `@seos/memory` — documented follow-up).
+
+---
+
 ## Phases 2-10 — sub-plan status
 
 | Phase | Subsystem | Package | Sub-plan written | Expanded to TDD | Built |
@@ -186,8 +216,8 @@ Built around a `ReviewAgent` interface (the integration seam) + `runBoard` aggre
 | 6 | DevOps | `@seos/devops` | ✅ | ✅ | ✅ |
 | 7 | Engineering Memory | `@seos/memory` | ✅ | ✅ | ✅ |
 | 8 | Multi-Agent Review Board | `@seos/review-board` | ✅ | ✅ | ✅ |
-| 9 | Self-Healing | `@seos/self-healing` | ✅ | ⬜ | ⬜ |
-| 10 | Enterprise / Compliance | `@seos/compliance` | ✅ | ⬜ | ⬜ |
+| 9 | Self-Healing | `@seos/self-healing` | ✅ | ✅ | ✅ |
+| 10 | Enterprise / Compliance | `@seos/compliance` | ✅ | ✅ | ✅ |
 
 ---
 
@@ -246,3 +276,6 @@ Built around a `ReviewAgent` interface (the integration seam) + `runBoard` aggre
 - **2026-06-19** — Expanded Phase 6 (DevOps) + Phase 8 (Review Board) into detailed TDD plans (`03f4929`). Built both sequentially on `main` (verbatim TDD). `@seos/devops` (8 tests); `@seos/review-board` (11 tests). Phase 8 designed around a `ReviewAgent` interface rather than importing siblings (they expose no library exports).
 - **2026-06-19** — Final review of both. `@seos/devops` ready as-is. `@seos/review-board` hardening `01d1e31`: anchored the documentation agent's README regex (the `readme` substring over-matched code filenames) → 12 tests.
 - **2026-06-19** — ✅ **Phases 6 & 8 complete.** Repo total: **8 MCP servers, 121 tests green** on `main`.
+- **2026-06-19** — Expanded Phase 9 (Self-Healing) + Phase 10 (Compliance) into detailed TDD plans (`ac8aab5`). Built both sequentially on `main`, verbatim, no deviations. `@seos/self-healing` (10 tests); `@seos/compliance` (7 tests).
+- **2026-06-19** — Final review (safety-critical focus): `create_pr` no-merge guard and audit-log hash chain both verified sound. Hardening: self-healing `eef3b5c` (structural merge guard + root-cause coverage → 13 tests); compliance `5120d8c` (defense-in-depth hash check + deletion/HIPAA tests → 9 tests).
+- **2026-06-19** — 🎉 **PROGRAM COMPLETE.** All 10 phases shipped: **10 MCP servers, 143 tests green** on `main`.
