@@ -1,64 +1,45 @@
-# Engineering OS (AI-SEOS)
+# Engineering OS
 
-**An AI Software Engineering Operating System** — a governance layer that sits between any coding LLM and production, enforcing the engineering discipline a mature software organization provides.
+**A governance layer for AI-assisted software development.** Engineering OS is a suite of [Model Context Protocol](https://modelcontextprotocol.io) (MCP) servers that sit between a coding assistant and your codebase, enforcing the engineering discipline of a mature software organization — version and dependency safety, hallucination detection, architecture and security review, automated QA, performance analysis, deployment scaffolding, institutional memory, multi-agent code review, automated remediation, and compliance.
 
-> The thesis: you don't beat vibe-coding failures by waiting for a smarter model. You beat them with a system that enforces version governance, dependency safety, hallucination detection, architecture review, security review, QA gates, performance checks, and institutional memory — automatically, every time.
-
-A solo founder using any coding LLM, plugged into these MCP servers, should produce software with quality approaching a 100-person engineering org — not because the AI is smarter, but because the system refuses to let undisciplined work through.
+The premise is simple: most failures in AI-generated code aren't reasoning failures, they're *discipline* failures — an outdated dependency, a hallucinated API, a leaked secret, an unreviewed architecture, a missing test. Engineering OS makes that discipline automatic.
 
 ---
 
-## What this is
+## Capabilities
 
-A pnpm monorepo of small, focused **[Model Context Protocol](https://modelcontextprotocol.io) servers**. Each one is an independently installable tool the coding LLM calls *before* and *during* code generation. Every tool is deterministic and dependency-injected, so the whole thing is fast and fully unit-tested offline.
+Each capability is an independent MCP server you can run on its own or compose with the others. Every tool is deterministic and side-effect-free where possible, with all network and filesystem access injected — so they run fast and behave predictably.
 
-The build is organized as a 10-phase program (see [`docs/superpowers/plans/2026-06-19-engineering-os.md`](docs/superpowers/plans/2026-06-19-engineering-os.md)). Live status lives in [`Progress.md`](Progress.md).
-
-## Servers
-
-| Phase | Package | Status | Tools |
-|------:|---------|:------:|-------|
-| 1 | [`@seos/knowledge`](packages/knowledge) | ✅ shipped | `check_versions`, `audit_dependency`, `verify_api`, `get_knowledge` |
-| 2 | [`@seos/architecture`](packages/architecture) | ✅ shipped | `intake_requirements`, `generate_architecture`, `review_design`, `write_adr` |
-| 3 | [`@seos/security`](packages/security) | ✅ shipped | `scan_secrets`, `scan_dependencies`, `scan_code`, `threat_model` |
-| 4 | [`@seos/qa`](packages/qa) | ✅ shipped | `generate_tests`, `check_coverage`, `detect_regressions` |
-| 5 | [`@seos/performance`](packages/performance) | ✅ shipped | `analyze_backend`, `analyze_frontend`, `simulate_load` |
-| 6 | [`@seos/devops`](packages/devops) | ✅ shipped | `generate_infra`, `generate_observability`, `check_reliability` |
-| 7 | [`@seos/memory`](packages/memory) | ✅ shipped | `record_decision`, `query_decisions`, `set_context`, `get_context`, `record_history`, `search_history` |
-| 8 | [`@seos/review-board`](packages/review-board) | ✅ shipped | `review_pr` (multi-agent board) |
-| 9 | [`@seos/self-healing`](packages/self-healing) | ✅ shipped | `ingest_signals`, `root_cause`, `propose_fix`, `create_pr` |
-| 10 | [`@seos/compliance`](packages/compliance) | ✅ shipped | `check_compliance`, `append_audit_log`, `verify_audit_log` |
-
-**All 10 phases shipped — 10 MCP servers, 143 tests green.**
-
-### What each shipped server does
-
-- **`@seos/knowledge`** — stops outdated/dangerous code. Validates package versions against the live npm registry (semver-range aware), scores dependencies for abandonment/risk, detects hallucinated APIs on installed packages, and serves a curated authoritative stack profile.
-- **`@seos/architecture`** — "architecture before code." Captures scale requirements, generates a deterministic architecture proposal, reviews it against design rules, and writes Architecture Decision Records.
-- **`@seos/security`** — automatic security review. Secret scanning (with frontend-leak escalation), live CVE lookups via [OSV.dev](https://osv.dev), static injection/XSS/eval detection, and threat modeling.
-- **`@seos/qa`** — automated QA gates. Generates Vitest skeletons from a file's real exported symbols, enforces a coverage threshold, and detects regressions between two test runs.
-- **`@seos/performance`** — catches scaling problems early. Detects backend N+1 queries and `SELECT *`, flags oversized frontend bundles against a budget, and runs a staged load simulation with an injectable runner.
-- **`@seos/devops`** — SRE practices for solo founders. Generates deployment infrastructure (Dockerfile, CI pipeline, health check), observability scaffolding (logging/metrics/tracing), and checks reliability readiness (backup/restore/rollback).
-- **`@seos/review-board`** — a multi-agent PR review board. Reference agents (documentation, secret-scan, large-file) each vote approve/reject; a PR is approved only when none reject. Extensible via a `ReviewAgent` interface.
-- **`@seos/self-healing`** — turns production signals into a fix. Dedupes logs/errors/metrics into issues, hypothesizes a root cause, proposes a fix + regression test, and opens a PR — **never auto-merging** (a human and the review board approve).
-- **`@seos/compliance`** — enterprise gates. Checks a system against SOC 2 / GDPR / HIPAA / PCI control checklists and maintains a tamper-evident, hash-chained audit log.
-- **`@seos/memory`** — persistent institutional memory. Decisions, project context, and historical bugs/incidents/bottlenecks that survive across sessions, behind a swappable store interface.
+| Domain | Server | What it does | Tools |
+|--------|--------|--------------|-------|
+| **Knowledge** | `@seos/knowledge` | Validates package versions against the live npm registry (semver-range aware), scores dependencies for abandonment risk, detects hallucinated APIs on installed packages, and serves a curated stack profile. | `check_versions`, `audit_dependency`, `verify_api`, `get_knowledge` |
+| **Architecture** | `@seos/architecture` | Captures scale requirements, generates a structured architecture proposal, reviews it against design rules, and records Architecture Decision Records. | `intake_requirements`, `generate_architecture`, `review_design`, `write_adr` |
+| **Security** | `@seos/security` | Secret scanning with frontend-leak escalation, live CVE lookups via [OSV.dev](https://osv.dev), static injection/XSS/eval detection, and threat modeling. | `scan_secrets`, `scan_dependencies`, `scan_code`, `threat_model` |
+| **Quality** | `@seos/qa` | Generates test skeletons from a file's real exported symbols, enforces a coverage threshold, and detects regressions between test runs. | `generate_tests`, `check_coverage`, `detect_regressions` |
+| **Performance** | `@seos/performance` | Detects backend N+1 queries and `SELECT *`, flags oversized frontend bundles against a budget, and runs staged load simulations. | `analyze_backend`, `analyze_frontend`, `simulate_load` |
+| **Operations** | `@seos/devops` | Generates deployment infrastructure (Dockerfile, CI pipeline, health checks), observability scaffolding (logging/metrics/tracing), and reliability readiness checks. | `generate_infra`, `generate_observability`, `check_reliability` |
+| **Memory** | `@seos/memory` | Persistent institutional memory — decisions, project context, and historical incidents that survive across sessions, behind a swappable store interface. | `record_decision`, `query_decisions`, `set_context`, `get_context`, `record_history`, `search_history` |
+| **Review** | `@seos/review-board` | A multi-agent review board where each agent votes approve/reject; a change is approved only when no agent rejects. Extensible via a `ReviewAgent` interface. | `review_pr` |
+| **Remediation** | `@seos/self-healing` | Turns production signals into a fix: dedupes logs/errors/metrics into issues, hypothesizes a root cause, proposes a fix and regression test, and opens a pull request — **never merging on its own**. | `ingest_signals`, `root_cause`, `propose_fix`, `create_pr` |
+| **Compliance** | `@seos/compliance` | Checks a system against SOC 2 / GDPR / HIPAA / PCI control checklists and maintains a tamper-evident, hash-chained audit log. | `check_compliance`, `append_audit_log`, `verify_audit_log` |
 
 ## Requirements
 
-- **Node 24+** and **pnpm 10+**
+- **Node.js** 24 or newer
+- **pnpm** 10 or newer
 
-## Install & build
+## Installation
 
 ```bash
+git clone <your-repo-url> engineering-os
+cd engineering-os
 pnpm install
-pnpm -r build     # build every package to its dist/
-pnpm -r test      # run the full test suite across all packages
+pnpm -r build
 ```
 
-## Register with Claude Code
+## Connecting to a coding assistant
 
-Add the servers you want to your MCP config (e.g. `.mcp.json` or your Claude Code settings). Build first (`pnpm -r build`).
+Engineering OS speaks MCP over stdio, so it works with any MCP-capable client (Claude Code, Claude Desktop, and others). After building, add the servers you want to your MCP configuration. A full configuration enabling every server:
 
 ```json
 {
@@ -110,41 +91,56 @@ Add the servers you want to your MCP config (e.g. `.mcp.json` or your Claude Cod
 }
 ```
 
-Each package's own README documents its tools and registration block in detail.
+You don't need to enable all of them — each server stands alone. Start with `seos-knowledge` and `seos-security`, then add others as needed.
 
-## Repository layout
+## Configuration
 
-```
-engineering-os/
-  packages/
-    knowledge/      # Phase 1
-    architecture/   # Phase 2
-    security/       # Phase 3
-    qa/             # Phase 4
-    performance/    # Phase 5
-    devops/         # Phase 6
-    memory/         # Phase 7
-    review-board/   # Phase 8
-    self-healing/   # Phase 9
-    compliance/     # Phase 10
-  docs/
-    superpowers/plans/   # the program plan + per-phase implementation plans
-    adr/                 # Architecture Decision Records (written by @seos/architecture)
-  Progress.md       # live build status, decisions log, deferred items
-  README.md         # you are here
-```
+Most servers need no configuration. Those that do read a single environment variable:
 
-## How it's built
+| Server | Variable | Default | Purpose |
+|--------|----------|---------|---------|
+| `@seos/knowledge` | `SEOS_KNOWLEDGE_PATH` | `./knowledge.json` (next to the binary) | Path to the curated stack profile |
+| `@seos/architecture` | `SEOS_ADR_DIR` | `docs/adr` | Directory where Architecture Decision Records are written |
+| `@seos/memory` | `SEOS_MEMORY_PATH` | `./memory.json` (next to the binary) | Path to the persistent memory store |
 
-Each phase is expanded into a complete TDD implementation plan, then executed task-by-task: a failing test first, the minimal implementation, a passing test, and a commit. Independent phases are built in parallel in isolated git worktrees. Every phase ends with a whole-package review and a hardening pass before it merges to `main`. Engineering discipline, applied to building the engineering-discipline tool.
+Each package's own `README.md` documents its tools and options in full.
 
 ## Design principles
 
-- **Deterministic primitives, not LLM calls.** These servers impose structure and catch known failure modes with transparent, testable rules. The LLM does the open-ended reasoning; the OS keeps it honest.
-- **Dependency injection everywhere.** Network and filesystem access is injected, so tests are offline and deterministic.
-- **Fail loud, not silently "all clear."** A security or version check that can't complete reports an error rather than a false pass.
-- **One responsibility per file; one concern per package.** Each server is independently installable and replaceable.
+- **Deterministic primitives, not model calls.** These servers impose structure and catch known failure modes with transparent, testable rules. The assistant does the open-ended reasoning; Engineering OS keeps it honest.
+- **Dependency injection throughout.** Network and filesystem access is injected, so behavior is predictable and the full suite runs offline.
+- **Fail loud, never a false "all clear."** A check that cannot complete reports an error rather than silently passing.
+- **One responsibility per module, one concern per server.** Every server is independently installable, testable, and replaceable.
 
-## Status & roadmap
+## Project structure
 
-**All 10 phases are shipped.** See [`Progress.md`](Progress.md) for the full build history, decisions log, and the list of documented v0.1 gaps deferred to later iterations (e.g. security multi-line patterns, memory MCP resources, wiring the review board's `ReviewAgent` interface to the sibling servers, persisting the compliance audit log via `@seos/memory`). These are enhancements on a complete, working foundation.
+```
+engineering-os/
+├── packages/
+│   ├── knowledge/        # version, dependency & API governance
+│   ├── architecture/     # architecture proposals & decision records
+│   ├── security/         # secrets, CVEs, static analysis, threat modeling
+│   ├── qa/               # test generation, coverage, regression detection
+│   ├── performance/      # backend, frontend & load analysis
+│   ├── devops/           # infrastructure, observability, reliability
+│   ├── memory/           # persistent decisions, context & history
+│   ├── review-board/     # multi-agent change review
+│   ├── self-healing/     # signal → root cause → fix → pull request
+│   └── compliance/       # SOC2/GDPR/HIPAA/PCI checks & audit log
+└── docs/
+    └── adr/              # Architecture Decision Records
+```
+
+## Development
+
+```bash
+pnpm -r build            # build every package
+pnpm -r test             # run the full test suite
+pnpm --filter @seos/security test     # test a single package
+```
+
+The codebase is TypeScript (ESM, NodeNext) and tested with Vitest. Contributions follow test-driven development: a failing test, the minimal implementation, a passing test.
+
+## License
+
+MIT

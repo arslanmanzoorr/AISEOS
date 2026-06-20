@@ -5,3 +5,8 @@ dist
 
 # local worktrees / agent scratch
 .claude/
+
+# planning & process docs (kept locally, not published)
+docs/superpowers/
+Progress.md
+2026-06-19-engineering-os.md
