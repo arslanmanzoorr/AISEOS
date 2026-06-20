@@ -20,4 +20,15 @@ describe("createPr", () => {
     // it did open a PR
     expect(flat.some((c) => c.includes("pr create"))).toBe(true);
   });
+
+  it("does not false-positive when the summary contains the word 'merge'", async () => {
+    const calls: string[][] = [];
+    const runner: CommandRunner = async (command, args) => {
+      calls.push([command, ...args]);
+      return "ok";
+    };
+    const result = await createPr({ category: "connectivity", summary: "merge upstream timeout config", patch: "p", tests: "t" }, runner);
+    expect(result.merged).toBe(false);
+    expect(calls.some((c) => c.join(" ").includes("pr create"))).toBe(true);
+  });
 });

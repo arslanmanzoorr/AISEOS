@@ -19,4 +19,10 @@ describe("rootCause", () => {
   it("falls back to unknown", () => {
     expect(rootCause(issue("something weird happened")).category).toBe("unknown");
   });
+  it("classifies connection refused as connectivity", () => {
+    expect(rootCause(issue("econnrefused connecting to redis")).category).toBe("connectivity");
+  });
+  it("classifies a deadlock as concurrency", () => {
+    expect(rootCause(issue("deadlock detected on table orders")).category).toBe("concurrency");
+  });
 });

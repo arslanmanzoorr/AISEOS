@@ -26,7 +26,9 @@ export async function createPr(fix: FixProposal, runner: CommandRunner = default
   const commands: string[] = [];
   for (const [command, args] of plan) {
     const joined = [command, ...args].join(" ");
-    if (/\bmerge\b/i.test(joined)) {
+    // Block an actual merge subcommand (git merge / gh ... merge) — but NOT a commit message that merely contains the word.
+    const isMerge = (command === "git" && args[0] === "merge") || (command === "gh" && args.includes("merge"));
+    if (isMerge) {
       throw new Error(`createPr refuses to run a merge command: ${joined}`);
     }
     await runner(command, args);
