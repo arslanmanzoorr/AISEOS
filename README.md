@@ -114,6 +114,25 @@ Most servers need no configuration. Those that do read a single environment vari
 
 Each package's own `README.md` documents its tools and options in full.
 
+## Companion tools
+
+AISEOS focuses on **governance**. It pairs well with a fast **code-intelligence** server in your local development loop:
+
+- **[codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp)** by [DeusData](https://github.com/DeusData) (MIT) — indexes your repository into a persistent knowledge graph in milliseconds, exposing graph search, call-path tracing, code snippets, and architecture queries. A single static binary with no runtime dependencies.
+
+Because it reads your **local** codebase, run it alongside the AISEOS stdio servers on your own machine — add it to the same MCP config:
+
+```json
+{
+  "mcpServers": {
+    "codebase-memory": { "command": "/path/to/codebase-memory-mcp" },
+    "seos-knowledge": { "command": "node", "args": ["./packages/knowledge/dist/index.js"] }
+  }
+}
+```
+
+> Note: codebase-memory-mcp runs **locally** (it indexes files on disk), so it is a companion to the local AISEOS servers — not part of the hosted gateway, which has no access to your code. It is an independent project; AISEOS simply recommends it. All credit to DeusData.
+
 ## Design principles
 
 - **Deterministic primitives, not model calls.** These servers impose structure and catch known failure modes with transparent, testable rules. The assistant does the open-ended reasoning; Engineering OS keeps it honest.
